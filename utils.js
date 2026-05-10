@@ -10,7 +10,14 @@ const dayjs = require('dayjs');
  * @returns {string} - 例如 '8折'
  */
 function getDiscountRate(product) {
-  // 請實作此函式
+  if (product.price === product.origin_price) return '無折扣';
+  
+  const rate = (product.price / product.origin_price) * 10;
+  
+  // 依據測試要求進行四捨五入至整數（例如：7.4 折 -> 7 折）
+  const formattedRate = Math.round(rate);
+  
+  return `${formattedRate}折`;
 }
 
 /**
@@ -19,7 +26,8 @@ function getDiscountRate(product) {
  * @returns {Array} - 分類陣列
  */
 function getAllCategories(products) {
-  // 請實作此函式
+  const categories = products.map(item => item.category);
+  return [...new Set(categories)];
 }
 
 /**
@@ -28,8 +36,10 @@ function getAllCategories(products) {
  * @returns {string} - 格式 'YYYY/MM/DD HH:mm'，例如 '2024/01/01 08:00'
  */
 function formatDate(timestamp) {
-  // 請實作此函式
-  // 提示：dayjs.unix...
+  // API 常常回傳 10 碼或 13 碼，若為 10 碼請用 dayjs.unix()
+  const isUnix = timestamp.toString().length === 10;
+  const date = isUnix ? dayjs.unix(timestamp) : dayjs(timestamp);
+  return date.format('YYYY/MM/DD HH:mm');
 }
 
 /**
@@ -38,11 +48,12 @@ function formatDate(timestamp) {
  * @returns {string} - 例如 '3 天前'
  */
 function getDaysAgo(timestamp) {
-  // 請實作此函式
-  // 提示：
-  // 1. 用 dayjs() 取得今天
-  // 2. 用 dayjs.unix(timestamp) 取得日期
-  // 3. 用 .diff() 計算天數差異
+  const isUnix = timestamp.toString().length === 10;
+  const targetDate = isUnix ? dayjs.unix(timestamp) : dayjs(timestamp);
+  const diffDays = dayjs().diff(targetDate, 'day');
+  
+  if (diffDays === 0) return '今天';
+  return `${diffDays} 天前`;
 }
 
 /**
@@ -58,7 +69,21 @@ function getDaysAgo(timestamp) {
  * - payment: 必須是 'ATM', 'Credit Card', 'Apple Pay' 其中之一
  */
 function validateOrderUser(data) {
-  // 請實作此函式
+  const errors = [];
+  const phoneRegex = /^09\d{8}$/;
+
+  if (!data.name || data.name.trim() === '') errors.push('姓名不可為空');
+  if (!phoneRegex.test(data.tel)) errors.push('電話必須是 09 開頭的 10 位數字');
+  if (!data.email || !data.email.includes('@')) errors.push('Email 必須包含 @ 符號');
+  if (!data.address || data.address.trim() === '') errors.push('地址不可為空');
+  
+  const validPayments = ['ATM', 'Credit Card', 'Apple Pay'];
+  if (!validPayments.includes(data.payment)) errors.push('付款方式無效');
+
+  return {
+    isValid: errors.length === 0,
+    errors
+  };
 }
 
 /**
@@ -72,9 +97,12 @@ function validateOrderUser(data) {
  * - 不可大於 99
  */
 function validateCartQuantity(quantity) {
-  // 請實作此函式
+  if (!Number.isInteger(quantity)) return { isValid: false, error: '必須是整數' };
+  if (quantity < 1) return { isValid: false, error: '數量不可小於 1' };
+  if (quantity > 99) return { isValid: false, error: '數量不可大於 99' };
+  
+  return { isValid: true };
 }
-
 /**
  * 格式化金額
  * @param {number} amount - 金額
@@ -91,7 +119,7 @@ function validateCartQuantity(quantity) {
  * 
  */
 function formatCurrency(amount) {
-  // 請實作此函式
+  return `NT$ ${amount.toLocaleString('zh-TW')}`;
 }
 
 module.exports = {
