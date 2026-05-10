@@ -14,7 +14,6 @@ function getDiscountRate(product) {
   
   const rate = (product.price / product.origin_price) * 10;
   
-  // 依據測試要求進行四捨五入至整數（例如：7.4 折 -> 7 折）
   const formattedRate = Math.round(rate);
   
   return `${formattedRate}折`;
@@ -36,7 +35,6 @@ function getAllCategories(products) {
  * @returns {string} - 格式 'YYYY/MM/DD HH:mm'，例如 '2024/01/01 08:00'
  */
 function formatDate(timestamp) {
-  // API 常常回傳 10 碼或 13 碼，若為 10 碼請用 dayjs.unix()
   const isUnix = timestamp.toString().length === 10;
   const date = isUnix ? dayjs.unix(timestamp) : dayjs(timestamp);
   return date.format('YYYY/MM/DD HH:mm');
@@ -112,10 +110,6 @@ function validateCartQuantity(quantity) {
  * - 加上 "NT$ " 前綴
  * - 數字需要千分位逗號分隔（例如：1000 → 1,000）
  * - 使用台灣格式（zh-TW）
- * 
- * 範例：
- * formatCurrency(1000) → "NT$ 1,000"
- * formatCurrency(1234567) → "NT$ 1,234,567"
  * 
  */
 function formatCurrency(amount) {
